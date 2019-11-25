@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs            #-}
 
-module PersistentConversions
+module PersistentUtil.Conversion
   ( sqlKey2Int
   , int2SqlKey
   , entity2Tuple

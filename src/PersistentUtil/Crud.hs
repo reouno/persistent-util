@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs            #-}
 
-module PersistentCrud
+module PersistentUtil.Crud
   ( selectList'
   , get'
   , insert'
@@ -10,35 +10,38 @@ module PersistentCrud
   , delete'
   ) where
 
-import           Conduit              ( MonadUnliftIO )
-import           Data.Pool            ( Pool )
+import           Conduit                   ( MonadUnliftIO )
+import           Data.Pool                 ( Pool )
 import           Database.Persist
 import           Database.Persist.Sql
+
+import           PersistentUtil.Conversion ( entity2Tuple )
 
 selectList' ::
      ( PersistQueryRead backend
      , IsPersistBackend backend
-     , MonadUnliftIO m
-     , PersistEntity record
-     , PersistEntityBackend record ~ BaseBackend backend
+     , ToBackendKey SqlBackend b
+     , MonadUnliftIO f
+     , PersistEntityBackend b ~ BaseBackend backend
      , BaseBackend backend ~ SqlBackend
      )
-  => Data.Pool.Pool backend
-  -> m [Entity record]
-selectList' = runSqlPool $ selectList [] []
+  => Pool backend
+  -> f [(Int, b)]
+selectList' pool = map entity2Tuple <$> runSqlPool (selectList [] []) pool
 
 get' ::
      ( PersistStoreRead backend
      , IsPersistBackend backend
-     , MonadUnliftIO m
-     , PersistEntity record
-     , PersistEntityBackend record ~ BaseBackend backend
+     , ToBackendKey SqlBackend b1
+     , MonadUnliftIO f
+     , PersistEntity (Entity b1)
      , BaseBackend backend ~ SqlBackend
+     , PersistEntityBackend (Entity b1) ~ BaseBackend backend
      )
-  => Key record
-  -> Data.Pool.Pool backend
-  -> m (Maybe record)
-get' = runSqlPool . get
+  => Key (Entity b1)
+  -> Pool backend
+  -> f (Maybe (Int, b1))
+get' k pool = fmap entity2Tuple <$> runSqlPool (get k) pool
 
 insert' ::
      ( PersistStoreWrite backend
@@ -49,11 +52,10 @@ insert' ::
      , BaseBackend backend ~ SqlBackend
      )
   => record
-  -> Data.Pool.Pool backend
+  -> Pool backend
   -> m (Key record)
-insert' = runSqlPool . insert
+insert' r = runSqlPool $ insert r
 
--- usually used as `update` method because of its simplicity
 replace' ::
      ( PersistStoreWrite backend
      , IsPersistBackend backend
@@ -64,7 +66,7 @@ replace' ::
      )
   => Key record
   -> record
-  -> Data.Pool.Pool backend
+  -> Pool backend
   -> m ()
 replace' k r = runSqlPool $ replace k r
 

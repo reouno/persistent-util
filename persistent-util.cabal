@@ -15,9 +15,10 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     PersistentConversions
-                     , PersistentCrud
-                     , PersistentExceptions
+  exposed-modules:     PersistentUtil
+                     , PersistentUtil.Conversion
+                     , PersistentUtil.Crud
+                     , PersistentUtil.Exception
   build-depends:       base >= 4.7 && < 5
                      , basement
                      , conduit

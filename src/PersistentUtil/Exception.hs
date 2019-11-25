@@ -1,4 +1,4 @@
-module PersistentExceptions
+module PersistentUtil.Exception
   ( KeyNotFoundException(..)
   ) where
 
