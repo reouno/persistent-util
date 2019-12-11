@@ -40,6 +40,20 @@ get' ::
   -> m (Maybe record)
 get' k = runSqlPool $ get k
 
+getBy' ::
+     ( PersistStoreRead backend
+     , PersistUniqueRead backend
+     , IsPersistBackend backend
+     , MonadUnliftIO m
+     , PersistEntity record
+     , PersistEntityBackend record ~ BaseBackend backend
+     , BaseBackend backend ~ SqlBackend
+     )
+  => Unique record
+  -> Pool backend
+  -> m (Maybe (Entity record))
+getBy' k = runSqlPool $ getBy k
+
 insert' ::
      ( PersistStoreWrite backend
      , IsPersistBackend backend
