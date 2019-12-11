@@ -4,6 +4,7 @@
 module PersistentUtil.Crud
   ( selectList'
   , get'
+  , getBy'
   , insert'
   , replace'
   , update'
